@@ -6,12 +6,14 @@ const LIST_OF_COMMANDS = [
   'moo',
   'baa',
   'oink',
+  'moo baa oink this is a really long command i type all day every day',
 ];
 
 function SideBar() {
   const onButtonClick = (buttonText: string): void => {
     console.log(buttonText)
   }
+
   return (
     <div>
       <List

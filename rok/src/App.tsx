@@ -1,10 +1,34 @@
 import React from 'react';
 import { XTerm } from './xterm';
+import os from 'os';
+import pty from 'node-pty';
 
-function App() {
+export const App = (): React.ReactElement => {
+  const ptyRef = React.useRef<pty.IPty | null>(null);
   const termRef = React.useRef<XTerm | null>(null);
   const [rowCount, setRowCount] = React.useState<number>(10);
   const [columnCount, setColumnCount] = React.useState<number>(10);
+
+  const onData = (data: string): void => {
+    if (data === '\r' || data === '\n') {
+      // run command
+      termRef.current?.write('\r\n');
+      ptyRef.current?.write(data);
+    } else {
+      console.log('data', data, encodeURIComponent(data), data === "\u0007");
+      termRef.current?.write(data);
+      ptyRef.current?.write(data);
+    }
+  }
+
+  React.useEffect((): void => {
+    const ptyProc = pty.spawn(os.platform() === 'win32' ? 'powershell.exe' : process.env.SHELL || '/bin/bash', [], {
+      cols: columnCount,
+      rows: rowCount
+    });
+    ptyRef.current = ptyProc;
+  }, []);
+
   return (
     <XTerm
       backgroundColor={'black'}
@@ -21,9 +45,8 @@ function App() {
       cursorAccentColor={'green'}
       cursorBlink={true}
       cursorColor={'yellow'}
-      cursorShape={'BLOCK'}
+      cursorShape={'BEAM'}
       disableLigatures={false}
-      fitAddon={null}
       fontFamily={'Arial'}
       fontSize={12}
       fontSmoothing={''}
@@ -35,15 +58,14 @@ function App() {
       lineHeight={1}
       macOptionSelectionMode={'vertical'}
       modifierKeys={{altIsMeta: true, cmdIsMeta: true}}
-      onActive={(): void => {}}
-      onContextMenu={(selection: any): void => {}}
+      onActive={(): void => {console.log('onactive')}}
+      onContextMenu={(selection: any): void => {console.log('onContextMenu', selection)}}
       onCursorMove={undefined}
-      onData={(data: string): void => {termRef.current?.write(data)}}
+      onData={onData}
       onTitle={(title: string): void => {document.title = title}}
       quickEdit={true}
       scrollback={100}
       search={false}
-      // searchAddon={null}
       selectionColor={'purple'}
       term={null}
       toggleSearch={(): void => {}}
@@ -56,5 +78,3 @@ function App() {
     />
   );
 }
-
-export default App;

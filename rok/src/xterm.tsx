@@ -1,11 +1,12 @@
 import React from 'react';
 import {Terminal, ITerminalOptions, IDisposable, FontWeight} from 'xterm';
 import {FitAddon} from 'xterm-addon-fit';
-// import {WebLinksAddon} from 'xterm-addon-web-links';
-// import {SearchAddon} from 'xterm-addon-search';
-// import {WebglAddon} from 'xterm-addon-webgl';
+import {WebLinksAddon} from 'xterm-addon-web-links';
+import {SearchAddon} from 'xterm-addon-search';
+import {WebglAddon} from 'xterm-addon-webgl';
+// Break the build!
 // import {LigaturesAddon} from 'xterm-addon-ligatures';
-// import {Unicode11Addon} from 'xterm-addon-unicode11';
+import {Unicode11Addon} from 'xterm-addon-unicode11';
 // import {clipboard, shell} from 'electron';
 import Color from 'color';
 // import processClipboard from '../utils/paste';
@@ -149,7 +150,6 @@ export type TermProps = {
   cursorColor: string;
   cursorShape: cursorShapes;
   disableLigatures: boolean;
-  fitAddon: FitAddon | null;
   fontFamily: string;
   fontSize: number;
   fontSmoothing?: string;
@@ -171,7 +171,6 @@ export type TermProps = {
   rows: number | null;
   scrollback: number;
   search: boolean;
-  // searchAddon: SearchAddon | null;
   selectionColor: string;
   term: Terminal | null;
   toggleSearch: () => void;
@@ -180,6 +179,8 @@ export type TermProps = {
   url: string | null;
   webGLRenderer: boolean;
   webLinksActivationKey: string;
+  fitAddon?: FitAddon | null;
+  searchAddon?: SearchAddon | null;
   ref_: (uid: string, term: XTerm | null) => void;
 };// & extensionProps;
 
@@ -236,7 +237,7 @@ export class XTerm extends React.PureComponent<TermProps> {
   disposableListeners: IDisposable[];
   termDefaultBellSound: string | null;
   fitAddon: FitAddon;
-  // searchAddon: SearchAddon;
+  searchAddon: SearchAddon;
   static rendererTypes: Record<string, string>;
   term!: Terminal;
   resizeObserver!: ResizeObserver;
@@ -251,7 +252,7 @@ export class XTerm extends React.PureComponent<TermProps> {
     this.disposableListeners = [];
     this.termDefaultBellSound = null;
     this.fitAddon = new FitAddon();
-    // this.searchAddon = new SearchAddon();
+    this.searchAddon = new SearchAddon();
   }
 
   // The main process shows this in the About dialog
@@ -304,35 +305,34 @@ export class XTerm extends React.PureComponent<TermProps> {
 
       this.term.attachCustomKeyEventHandler(this.keyboardHandler);
       this.term.loadAddon(this.fitAddon);
-      // this.term.loadAddon(this.searchAddon);
-      // this.term.loadAddon(
-      //   new WebLinksAddon(
-      //     (event: MouseEvent | undefined, uri: string) => {
-      //       if (shallActivateWebLink(event)) shell.openExternal(uri);
-      //     },
-      //     {
-      //       // prevent default electron link handling to allow selection, e.g. via double-click
-      //       willLinkActivate: (event: MouseEvent | undefined) => {
-      //         event?.preventDefault();
-      //         return shallActivateWebLink(event);
-      //       },
-      //       priority: Date.now()
-      //     }
-      //   )
-      // );
+      this.term.loadAddon(this.searchAddon);
+      this.term.loadAddon(
+        new WebLinksAddon(
+          (event: MouseEvent | undefined, uri: string) => {
+            // if (shallActivateWebLink(event)) shell.openExternal(uri);
+          },
+          {
+            // prevent default electron link handling to allow selection, e.g. via double-click
+            willLinkActivate: (event: MouseEvent | undefined) => {
+              event?.preventDefault();
+              return shallActivateWebLink(event);
+            },
+            priority: Date.now()
+          }
+        )
+      );
       this.term.open(this.termRef);
-      // if (useWebGL) {
-      //   this.term.loadAddon(new WebglAddon());
-      // }
-      // if (props.disableLigatures !== true) {
-      //   this.term.loadAddon(new LigaturesAddon());
-      // }
-      // this.term.loadAddon(new Unicode11Addon());
-      // this.term.unicode.activeVersion = '11';
+      if (useWebGL) {
+        this.term.loadAddon(new WebglAddon());
+      }
+      if (props.disableLigatures !== true) {
+        // this.term.loadAddon(new LigaturesAddon());
+      }
+      this.term.loadAddon(new Unicode11Addon());
+      this.term.unicode.activeVersion = '11';
     } else {
-      // get the cached plugins
-      // this.fitAddon = props.fitAddon!;
-      // // this.searchAddon = props.searchAddon!;
+      this.fitAddon = props.fitAddon!;
+      this.searchAddon = props.searchAddon!;
     }
 
     this.fitAddon.fit();
@@ -404,14 +404,14 @@ export class XTerm extends React.PureComponent<TermProps> {
   // intercepting paste event for any necessary processing of
   // clipboard data, if result is falsy, paste event continues
   onWindowPaste = (e: any) => {
-  //   if (!this.props.isTermActive) return;
+    // if (!this.props.isTermActive) return;
 
-  //   const processed = processClipboard();
-  //   if (processed) {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //     (this.term as any)._core.handler(processed);
-  //   }
+    // const processed = processClipboard();
+    // if (processed) {
+    //   e.preventDefault();
+    //   e.stopPropagation();
+    //   (this.term as any)._core.handler(processed);
+    // }
   };
 
   onMouseUp = (e: React.MouseEvent) => {
@@ -444,15 +444,15 @@ export class XTerm extends React.PureComponent<TermProps> {
   }
 
   search = (searchTerm = '') => {
-    // this.searchAddon.findNext(searchTerm);
+    this.searchAddon.findNext(searchTerm);
   };
 
   searchNext = (searchTerm: string) => {
-    // this.searchAddon.findNext(searchTerm);
+    this.searchAddon.findNext(searchTerm);
   };
 
   searchPrevious = (searchTerm: string) => {
-    // this.searchAddon.findPrevious(searchTerm);
+    this.searchAddon.findPrevious(searchTerm);
   };
 
   closeSearchBox = () => {

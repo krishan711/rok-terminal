@@ -10,15 +10,7 @@ export const App = (): React.ReactElement => {
   const [columnCount, setColumnCount] = React.useState<number>(10);
 
   const onData = (data: string): void => {
-    if (data === '\r' || data === '\n') {
-      // run command
-      termRef.current?.write('\r\n');
-      ptyRef.current?.write(data);
-    } else {
-      console.log('data', data, encodeURIComponent(data), data === "\u0007");
-      termRef.current?.write(data);
-      ptyRef.current?.write(data);
-    }
+    ptyRef.current?.write(data);
   }
 
   React.useEffect((): void => {
@@ -27,6 +19,9 @@ export const App = (): React.ReactElement => {
       rows: rowCount
     });
     ptyRef.current = ptyProc;
+    ptyProc.on('data', function (data: string) {
+      termRef.current?.write(data);
+    });
   }, []);
 
   return (

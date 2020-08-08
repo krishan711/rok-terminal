@@ -1,6 +1,10 @@
 import React from 'react';
-import { List, Button } from 'antd';
+import { Menu } from 'antd'
+import {
+  OrderedListOutlined,
+} from '@ant-design/icons';
 
+const { SubMenu } = Menu;
 
 const LIST_OF_COMMANDS = [
   'moo',
@@ -9,28 +13,30 @@ const LIST_OF_COMMANDS = [
   'moo baa oink this is a really long command i type all day every day',
 ];
 
-function SideBar() {
-  const onButtonClick = (buttonText: string): void => {
-    console.log(buttonText)
+export interface ISideBarProps {
+  onRecentCommandSelected: (command: string) => void,
+}
+
+const SideBar = (props: ISideBarProps) => {
+  const onRecentCommandSelected = (command: string): void => {  // TODO(rikhil): figure out how to share this state
+    props.onRecentCommandSelected(command);
   }
 
   return (
-    <div>
-      <List
-        bordered
-        dataSource={LIST_OF_COMMANDS}
-        renderItem={(item: string) => (
-          <List.Item>
-            <Button
-              onClick={() => onButtonClick(item)}
-              type="primary"
-            >
-              {item}
-            </Button>
-          </List.Item>
-        )}
-      />
-    </div>
+    <Menu theme="dark" defaultSelectedKeys={['recent-commands']} mode="inline">
+      <SubMenu
+        key="recent-commands"
+        icon={<OrderedListOutlined />}
+        title="Recent commands"
+      >
+        {LIST_OF_COMMANDS.map((command: string, index: number) => (
+          <Menu.Item
+            key={index.toString()}
+            onClick={() => onRecentCommandSelected(command)}
+          >{command}</Menu.Item>
+        ))}
+      </SubMenu>
+    </Menu>
   )
 }
 

@@ -6,12 +6,20 @@ import { Layout } from 'antd'
 import SideBar from './sidebar';
 
 
-const { Content, Footer, Sider } = Layout;
+
+const LIST_OF_COMMANDS = [
+  'moo',
+  'baa',
+  'oink',
+  'moo baa oink this is a really long command i type all day every day',
+];
 
 
 const App = () => {
   const [isMenuCollapsed, setIsMenuCollapsed] = React.useState<boolean>(true);
-  const [, setRecentCommandClicked] = React.useState<string>();  // TODO(rikhil): pass the recent command clicked to the terminal prompt
+
+  const [recentCommands, setRecentCommands] = React.useState<string[]>(LIST_OF_COMMANDS);
+  const [recentCommandClicked, setRecentCommandClicked] = React.useState<string>();  // TODO(rikhil): pass the recent command clicked to the terminal prompt
 
   const toggleMenu = () => {
     setIsMenuCollapsed(!isMenuCollapsed);
@@ -26,21 +34,18 @@ const App = () => {
     <div className="App">
       <header className="App-header">
         <Layout style={{ minHeight: '100vh' }}>
-          <Sider collapsible collapsed={isMenuCollapsed} onCollapse={toggleMenu}>
-            <SideBar
-              onRecentCommandSelected={onRecentCommandSelected}
-            />
-          </Sider>
+          <Layout.Sider collapsed={false} onCollapse={toggleMenu}>
+            <SideBar recentCommands={recentCommands} setRecentCommands={setRecentCommands} onRecentCommandSelected={onRecentCommandSelected} />
+          </Layout.Sider>
           <Layout className="site-layout">
-            <Content style={{ margin: '0 16px' }}>
+            <Layout.Content style={{ margin: '0 16px' }}>
               <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
                 Welcome to rok terminal
               </div>
-            </Content>
-            <Footer style={{ textAlign: 'center' }}>©2020 Created by team rok</Footer>
+            </Layout.Content>
+            <Layout.Footer style={{ textAlign: 'center' }}>©2020 Created by team rok</Layout.Footer>
           </Layout>
         </Layout>
-
       </header>
     </div>
   );

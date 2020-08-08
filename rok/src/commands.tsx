@@ -1,13 +1,10 @@
-import React from 'react';
 import {verbose} from 'sqlite3';
-
-const sqlite3 = verbose();
-
 
 class CommandsDB {
     db: any
     constructor(){
-        this.db = new sqlite3.Database('commands.db', (err) => {
+        const sqlite3Verbose = verbose()
+        this.db = new sqlite3Verbose.Database('commands.db', (err) => {
             if (err) {
                 return console.error(err.message);
             }
@@ -45,9 +42,31 @@ class CommandsDB {
         `);
     }
     most_frequest_commands(location: string, n: number=10){
-        this.db.run(`SELECT command, count FROM commands WHERE location = ?1 ORDER BY count DESC LIMIT ?2`, [location, n]);
+        let commands: any = []
+        this.db.all(`SELECT command, count FROM commands WHERE location = ?1 ORDER BY count DESC LIMIT ?2`, [location, n], (err, rows) => {console.log(rows); commands.concat(rows);});
+        return commands;
     }
     most_recent_commands(location: string, n: number=10){
-        this.db.run(`SELECT command FROM commands WHERE location = ?1 ORDER BY last_updated DESC LIMIT ?2`, [location, n]);
+        let commands: any = []
+        this.db.all(`SELECT command FROM commands WHERE location = ?1 ORDER BY last_updated DESC LIMIT ?2`, [location, n], (err, rows)=> {console.log(rows); commands.concat(rows);});
+        return commands;
     }
 }
+
+
+let db = new CommandsDB()
+// db.clear();
+// db.create();
+db.update("/", "ls");
+db.update("/", "ls");
+db.update("/", "ls");
+db.update("/", "cmd");
+db.update("/", "top");
+db.update("/", "ls");
+db.update("/home", "ls");
+db.update("/home", "ls");
+db.update("/home", "cd");
+console.log(db.most_frequest_commands("/home"))
+console.log(db.most_frequest_commands("/"))
+console.log(db.most_recent_commands("/"))
+db.close()
